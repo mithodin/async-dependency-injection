@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { RuntimeContainer } from "./index";
-import { Constant, Factory, Singleton } from "../../providers";
+import {
+    ConstantProvider,
+    FactoryProvider,
+    SingletonProvider,
+} from "../../providers";
 
 const singletonValue: unique symbol = Symbol("singletonValue");
 const factoryValue: unique symbol = Symbol("factoryValue");
@@ -14,7 +18,7 @@ describe("Runtime Container", () => {
 
     it("should return a singleton value", () => {
         const container = RuntimeContainer({
-            a: new Singleton(() => singletonValue),
+            a: new SingletonProvider(() => singletonValue),
         });
 
         const value = container.a;
@@ -24,7 +28,7 @@ describe("Runtime Container", () => {
 
     it("should return a factory value", () => {
         const container = RuntimeContainer({
-            a: new Factory(() => factoryValue),
+            a: new FactoryProvider(() => factoryValue),
         });
 
         const value = container.a;
@@ -34,7 +38,7 @@ describe("Runtime Container", () => {
 
     it("should return a constant value", () => {
         const container = RuntimeContainer({
-            a: new Constant(constantValue),
+            a: new ConstantProvider(constantValue),
         });
 
         const value = container.a;
@@ -44,7 +48,7 @@ describe("Runtime Container", () => {
 
     it("should not allow assignment to values", () => {
         const container = RuntimeContainer({
-            a: new Constant(constantValue),
+            a: new ConstantProvider(constantValue),
         });
 
         expect(
@@ -54,7 +58,7 @@ describe("Runtime Container", () => {
 
     it("should not allow adding values", () => {
         const container = RuntimeContainer({
-            a: new Constant(constantValue),
+            a: new ConstantProvider(constantValue),
         });
 
         expect(

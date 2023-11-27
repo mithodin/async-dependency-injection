@@ -1,12 +1,12 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
     CONSTANT,
-    Provider,
-    Constant,
-    SINGLETON,
-    Singleton,
+    ConstantProvider,
     FACTORY,
-    Factory,
+    FactoryProvider,
+    Provider,
+    SINGLETON,
+    SingletonProvider,
 } from "./index";
 
 describe("Common Providers", () => {
@@ -19,7 +19,7 @@ describe("Common Providers", () => {
             {},
         );
 
-        expect(provider).toBeInstanceOf(Constant);
+        expect(provider).toBeInstanceOf(ConstantProvider);
         expect(provider.value).toBe("test");
     });
 
@@ -32,7 +32,7 @@ describe("Common Providers", () => {
             { text: "test" },
         );
 
-        expect(provider).toBeInstanceOf(Singleton);
+        expect(provider).toBeInstanceOf(SingletonProvider);
         expect(provider.value).toBe("test");
     });
 
@@ -46,7 +46,7 @@ describe("Common Providers", () => {
             { count: 3 },
         );
 
-        expect(provider).toBeInstanceOf(Factory);
+        expect(provider).toBeInstanceOf(FactoryProvider);
         expect(provider.value).toBe("aaa");
     });
 });
@@ -56,7 +56,7 @@ type Value = typeof value;
 
 describe("Constant Provider", () => {
     it("should return the provided value", () => {
-        const provider: Provider<Value> = new Constant(value);
+        const provider: Provider<Value> = new ConstantProvider(value);
 
         const providedValue = provider.value;
 
@@ -66,7 +66,7 @@ describe("Constant Provider", () => {
 
 describe("Singleton Provider", () => {
     it("should return the value returned by the factor function", () => {
-        const provider: Provider<Value> = new Singleton(() => value);
+        const provider: Provider<Value> = new SingletonProvider(() => value);
 
         const providedValue = provider.value;
         expect(providedValue).toBe(value);
@@ -74,7 +74,7 @@ describe("Singleton Provider", () => {
 
     it("should only invoke the factory function once", () => {
         const factory = vi.fn<[], Value>(() => value);
-        const provider: Provider<Value> = new Singleton(factory);
+        const provider: Provider<Value> = new SingletonProvider(factory);
 
         let val = provider.value;
         void val;
@@ -87,7 +87,7 @@ describe("Singleton Provider", () => {
 
 describe("Factory Provider", () => {
     it("should return the value returned by the factor function", () => {
-        const provider: Provider<Value> = new Factory(() => value);
+        const provider: Provider<Value> = new FactoryProvider(() => value);
 
         const providedValue = provider.value;
         expect(providedValue).toBe(value);
@@ -95,7 +95,7 @@ describe("Factory Provider", () => {
 
     it("should only invoke the factory every time the value is read", () => {
         const factory = vi.fn<[], Value>(() => value);
-        const provider: Provider<Value> = new Factory(factory);
+        const provider: Provider<Value> = new FactoryProvider(factory);
 
         let val = provider.value;
         void val;

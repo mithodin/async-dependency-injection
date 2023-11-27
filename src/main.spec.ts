@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createContainer, type } from "./main";
 
 describe("Create Container", () => {
@@ -29,5 +29,26 @@ describe("Create Container", () => {
             expect(container.use("a")).toBe("hello");
             expect(container.use("b")).toBe(1);
         });
+    });
+
+    it("should create one singleton per run", () => {
+        const factory = vi.fn(() => "test");
+        const container = createContainer({
+            a: type<string>(),
+        });
+
+        const runner = container.provider().singleton("a", factory).create();
+
+        runner.run(() => {
+            console.log(container.use("a"));
+            console.log(container.use("a"));
+        });
+        expect(factory).toHaveBeenCalledTimes(1);
+
+        runner.run(() => {
+            console.log(container.use("a"));
+            console.log(container.use("a"));
+        });
+        expect(factory).toHaveBeenCalledTimes(2);
     });
 });

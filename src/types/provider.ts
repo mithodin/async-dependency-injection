@@ -1,24 +1,10 @@
 import { ADIRunner } from "./runner";
-import { NotNeverProps } from "./util";
+import { GenericRecord, NotNeverProps } from "./util";
 
-export interface ConstructorFactory<
-    Dependency,
-    Configuration extends Record<string | symbol | number, unknown> = Record<
-        never,
-        unknown
-    >,
-> {
-    new (config: Configuration): Dependency;
-}
 export type Factory<
     Dependency,
-    Configuration extends Record<string | symbol | number, unknown> = Record<
-        never,
-        unknown
-    >,
-> =
-    | ((config: Configuration) => Dependency)
-    | ConstructorFactory<Dependency, Configuration>;
+    Configuration extends GenericRecord = Record<never, unknown>,
+> = (config: Configuration) => Dependency;
 
 export type ADIProvider<
     Dependencies extends Record<string | symbol, unknown>,
