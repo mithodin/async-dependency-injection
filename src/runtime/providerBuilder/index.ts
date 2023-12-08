@@ -40,10 +40,7 @@ export function ProviderBuilder<
                     "Cannot create a runner without providing all dependencies",
                 );
             }
-            return new Runner<Dependencies, Record<never, unknown>>(
-                storage,
-                this.providers,
-            );
+            return new Runner<Dependencies>(storage, this.providers);
         },
 
         constant<NewProvider extends keyof Dependencies>(
@@ -94,6 +91,20 @@ export function ProviderBuilder<
                         factory,
                     },
                 },
+            };
+        },
+
+        defer<NewProvider extends keyof Dependencies>(
+            this: ADIProviderInternal<Dependencies, keyof Dependencies>,
+            dependency: NewProvider,
+        ) {
+            const newProviders = {
+                ...this.providers,
+            };
+            delete newProviders[dependency];
+            return {
+                ...this,
+                providers: newProviders,
             };
         },
     };

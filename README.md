@@ -8,6 +8,9 @@ It leverages Typescript to ensure type safety.
 
 ### 1. Create a container
 
+A container is a collection of dependencies you want to use in your program.
+Your program can use one or multiple containers at the same time.
+
 ```typescript
 import { createContainer, type } from "async-dependency-injection";
 
@@ -15,6 +18,7 @@ const container = createContainer({
     logger: type<(message: string) => void>(),
     name: type<string>(),
     counter: type<number>(),
+    user: type<string>(),
 });
 ```
 
@@ -24,18 +28,24 @@ The dependency names can be strings or symbols.
 
 ### 2. Create a runner
 
+A runner is a construct which executes a program using the dependencies defined by a container.
+
 ```typescript
 let counter = 0;
 const provider = container
     .provider()
     .constant("logger", () => console.log)
     .singleton("name", () => "world")
-    .factory("counter", () => counter++);
+    .factory("counter", () => counter++)
+    .defer("user");
 
 const runner = provider.create();
 ```
 
-You create a runner by creating a provider which provides all the dependencies.
+You create a runner by first creating a provider which provides all the dependencies.
+A container can have many different providers.
+E.g. you could create a production provider to actually run your program ant a test provider (which provides mocks)
+for use in your unit tests.
 Only when all dependencies are provided can you call `provider.create()` to create a runner.
 This is enforced on the type level as well as at runtime.
 
@@ -45,12 +55,15 @@ As you can see in the example above, there are three ways to provide dependencie
 -   `singleton` provides a value which is created once (on first use) and then cached.
 -   `factory` provides a value which is created every time it is used.
 
-You should be aware that a singleton provider will be called once for every run you start with the runner,
-so it is a singleton only within the scope of one run.
+You should be aware that a singleton provider will be called once for every runner you create with it,
+so it is a singleton only within the scope of one runner.
 
-A container can have many different providers.
+You can also defer providing a dependency. In that case, you have to provide it later when you actually
+run a program using the runner.
 
 ### 3. Use the runner
+
+The runner can execute a program that you pass to it.
 
 ```typescript
 const program = () => {
@@ -63,7 +76,7 @@ const program = () => {
     return "done";
 };
 
-const result = runner.run(program);
+const result = runner.run(program, { user: "ava" });
 console.log(result);
 ```
 
@@ -78,31 +91,29 @@ hello world 1!
 done
 ```
 
-### Usage with run configuration
+### Usage with deferred dependencies
 
-A provider can also have a run configuration, e.g. if you want to provide information about a request context.
+If you have some dependencies that change on every run, you can defer them (see above in step 2).
+For example, you might want to provide information about a request context in a web server.
 
 ```typescript
 import { createContainer, type } from "async-dependency-injection";
 
 const container = createContainer({
     logger: type<{ info: (message: string) => void }>(),
+    userIP: type<string>(),
 });
 
 class LoggerWithIP {
-    private readonly userIP: string;
-    constructor({ userIP }: { userIP: string }) {
-        this.userIP = userIP;
-    }
-
     info(message: string) {
-        console.info(`[${this.userIP}] ${message}`);
+        console.info(`[${container.use("userIP")}] ${message}`);
     }
 }
 
 const runner = container
     .provider<{ userIP: string }>()
     .singleton("logger", (config) => new LoggerWithIP(config))
+    .defer("userIP")
     .create();
 
 const program = () => {

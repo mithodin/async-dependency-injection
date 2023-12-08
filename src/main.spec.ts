@@ -31,7 +31,7 @@ describe("Create Container", () => {
         });
     });
 
-    it("should create one singleton per run", () => {
+    it("should create one singleton per runner", () => {
         const factory = vi.fn(() => "test");
         const container = createContainer({
             a: type<string>(),
@@ -43,9 +43,17 @@ describe("Create Container", () => {
             console.log(container.use("a"));
             console.log(container.use("a"));
         });
-        expect(factory).toHaveBeenCalledTimes(1);
+        expect(factory).toHaveBeenCalledOnce();
 
         runner.run(() => {
+            console.log(container.use("a"));
+            console.log(container.use("a"));
+        });
+        expect(factory).toHaveBeenCalledOnce();
+
+        const runner2 = container.provider().singleton("a", factory).create();
+
+        runner2.run(() => {
             console.log(container.use("a"));
             console.log(container.use("a"));
         });

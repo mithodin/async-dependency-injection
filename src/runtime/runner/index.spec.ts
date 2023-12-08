@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { describe, expect, it, vi } from "vitest";
 import { Runner } from "./index";
-import { CONSTANT, SINGLETON } from "../../providers";
+import { CONSTANT, FACTORY, SINGLETON } from "../../providers";
 
 describe("Runner", () => {
     it("should construct", () => {
@@ -34,5 +34,41 @@ describe("Runner", () => {
             return `${a} ${b}`;
         });
         expect(result).toBe("hello world");
+    });
+
+    it("should instantiate a singleton exactly once (even with multiple runs)", () => {
+        const storage = new AsyncLocalStorage<{ a: string }>();
+        const factory = vi.fn(() => "hello");
+        const runner = new Runner(storage, {
+            a: {
+                type: SINGLETON,
+                factory,
+            },
+        });
+        runner.run(() => {
+            storage.getStore()!.a;
+            storage.getStore()!.a;
+        });
+
+        expect(factory).toHaveBeenCalledOnce();
+
+        runner.run(() => {
+            storage.getStore()!.a;
+            storage.getStore()!.a;
+        });
+        expect(factory).toHaveBeenCalledOnce();
+    });
+
+    it("should merge the provided configuration with the dependencies", () => {
+        const storage = new AsyncLocalStorage<{ a: string; b: string }>();
+        const runner = new Runner<{ a: string; b: string }, "b">(storage, {
+            a: {
+                type: FACTORY,
+                factory: () => storage.getStore()!.b,
+            },
+        });
+
+        const result = runner.run(() => storage.getStore()!.a, { b: "hello" });
+        expect(result).toBe("hello");
     });
 });

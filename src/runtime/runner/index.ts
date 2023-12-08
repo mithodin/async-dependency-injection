@@ -6,22 +6,32 @@ import { mapObject } from "../../utils/objectMapper";
 
 export class Runner<
     Dependencies extends Record<string | symbol, unknown>,
-    C extends Record<string | number | symbol, unknown>,
-> implements ADIRunner<C>
+    ConfigurationKeys extends keyof Dependencies = never,
+> implements ADIRunner<Pick<Dependencies, ConfigurationKeys>>
 {
+    readonly #providers: Omit<
+        { [K in keyof Dependencies]: Provider<Dependencies[K]> },
+        ConfigurationKeys
+    >;
+
     constructor(
         private readonly storage: AsyncLocalStorage<Dependencies>,
-        private readonly providers: {
-            [K in keyof Dependencies]: ProviderConfig<Dependencies[K]>;
-        },
-    ) {}
-
-    readonly run = ((program: () => unknown, _config: C) => {
-        const providers = mapObject<
-            typeof this.providers,
+        providerConfig: Omit<
+            { [K in keyof Dependencies]: ProviderConfig<Dependencies[K]> },
+            ConfigurationKeys
+        >,
+    ) {
+        this.#providers = mapObject<
+            typeof providerConfig,
             { [K in keyof Dependencies]: Provider<Dependencies[K]> }
-        >(this.providers, (provider) => Provider.from(provider));
-        const container = RuntimeContainer<Dependencies>(providers);
+        >(providerConfig, (provider) => Provider.from(provider));
+    }
+
+    readonly run = ((
+        program: () => unknown,
+        config: Pick<Dependencies, ConfigurationKeys>,
+    ) => {
+        const container = RuntimeContainer(this.#providers, config);
         return this.storage.run(container, program);
-    }) as ADIRunner<C>["run"];
+    }) as ADIRunner<Pick<Dependencies, ConfigurationKeys>>["run"];
 }

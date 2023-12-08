@@ -65,4 +65,16 @@ describe("Runtime Container", () => {
             () => ((container as Record<string, unknown>).b = constantValue),
         ).toThrow();
     });
+
+    it("should merge providers with a static object", () => {
+        const container = RuntimeContainer<{ a: string; b: string }, "b">(
+            {
+                a: new ConstantProvider("Hello"),
+            },
+            { b: "World" },
+        );
+
+        expect(container.a).toBe("Hello");
+        expect(container.b).toBe("World");
+    });
 });

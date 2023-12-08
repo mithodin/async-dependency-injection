@@ -57,4 +57,12 @@ describe("Provider Builder", () => {
             .create();
         expect(runner).toBeInstanceOf(Runner);
     });
+
+    it("should create a runner with a deferred dependency", () => {
+        const storage = new AsyncLocalStorage<TestDependencies>();
+        const builder = ProviderBuilder<TestDependencies>(storage, ["a", "b"]);
+
+        const runner = builder.defer("a").constant("b", 1).create();
+        expect(runner).toBeInstanceOf(Runner);
+    });
 });
