@@ -8,17 +8,10 @@ type TestDependencies = {
     b: number;
 };
 
-type TestConfiguration = {
-    count: number;
-};
-
 describe("Provider Builder", () => {
     it("should return an object", () => {
         const storage = new AsyncLocalStorage<TestDependencies>();
-        const builder = ProviderBuilder<TestDependencies, TestConfiguration>(
-            storage,
-            ["a", "b"],
-        );
+        const builder = ProviderBuilder<TestDependencies>(storage, ["a", "b"]);
         expect(builder).toBeDefined();
     });
 

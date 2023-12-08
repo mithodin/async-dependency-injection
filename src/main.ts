@@ -22,9 +22,7 @@ class Container<Dependencies extends Record<string | symbol, unknown>>
     private readonly storage = new AsyncLocalStorage<Dependencies>();
     constructor(private readonly dependencies: Array<keyof Dependencies>) {}
 
-    provider<
-        Configuration extends Record<string | number | symbol, unknown>,
-    >(): ADIProvider<Dependencies, Configuration> {
+    provider(): ADIProvider<Dependencies> {
         return ProviderBuilder(this.storage, this.dependencies);
     }
 

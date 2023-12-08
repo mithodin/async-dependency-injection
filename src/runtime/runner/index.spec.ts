@@ -35,22 +35,4 @@ describe("Runner", () => {
         });
         expect(result).toBe("hello world");
     });
-
-    it("should set up providers with the given configuration", () => {
-        const storage = new AsyncLocalStorage<{ a: string }>();
-        const runner = new Runner<{ a: string }, { b: string }>(storage, {
-            a: {
-                type: SINGLETON,
-                factory: ({ b }) => `hello ${b}`,
-            },
-        });
-        const result = runner.run(
-            () => {
-                const { a } = storage.getStore()!;
-                return a;
-            },
-            { b: "world" },
-        );
-        expect(result).toBe("hello world");
-    });
 });

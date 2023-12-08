@@ -11,43 +11,35 @@ import {
 
 describe("Common Providers", () => {
     it("should create a constant provider", () => {
-        const provider = Provider.from(
-            {
-                type: CONSTANT,
-                value: "test",
-            },
-            {},
-        );
+        const provider = Provider.from({
+            type: CONSTANT,
+            value: "test",
+        });
 
         expect(provider).toBeInstanceOf(ConstantProvider);
         expect(provider.value).toBe("test");
     });
 
     it("should create a singleton provider", () => {
-        const provider = Provider.from(
-            {
-                type: SINGLETON,
-                factory: (config: { text: string }) => config.text,
-            },
-            { text: "test" },
-        );
+        const provider = Provider.from({
+            type: SINGLETON,
+            factory: () => "test",
+        });
 
         expect(provider).toBeInstanceOf(SingletonProvider);
         expect(provider.value).toBe("test");
     });
 
     it("should create a factory provider", () => {
-        const provider = Provider.from(
-            {
-                type: FACTORY,
-                factory: (config: { count: number }) =>
-                    Array(config.count).fill("a").join(""),
-            },
-            { count: 3 },
-        );
+        let count = 1;
+        const provider = Provider.from({
+            type: FACTORY,
+            factory: () => count++,
+        });
 
         expect(provider).toBeInstanceOf(FactoryProvider);
-        expect(provider.value).toBe("aaa");
+        expect(provider.value).toBe(1);
+        expect(provider.value).toBe(2);
     });
 });
 

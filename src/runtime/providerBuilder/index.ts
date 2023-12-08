@@ -7,11 +7,10 @@ const NOT_PROVIDED: unique symbol = Symbol("NOT_PROVIDED");
 
 type ADIProviderInternal<
     Dependencies extends Record<string | symbol, unknown>,
-    Configuration extends Record<string | symbol | number, unknown>,
     Provided extends keyof Dependencies = never,
-> = ADIProvider<Dependencies, Configuration, Provided> & {
+> = ADIProvider<Dependencies, Provided> & {
     providers: {
-        [K in Provided]: ProviderConfig<Dependencies[K], Configuration>;
+        [K in Provided]: ProviderConfig<Dependencies[K]>;
     } & {
         [K in Exclude<keyof Dependencies, Provided>]: typeof NOT_PROVIDED;
     };
@@ -19,14 +18,10 @@ type ADIProviderInternal<
 
 export function ProviderBuilder<
     Dependencies extends Record<string | symbol, unknown>,
-    Configuration extends Record<string | symbol | number, unknown> = Record<
-        never,
-        unknown
-    >,
 >(
     storage: AsyncLocalStorage<Dependencies>,
     dependencies: Array<keyof Dependencies>,
-): ADIProvider<Dependencies, Configuration> {
+): ADIProvider<Dependencies> {
     const initialProviders = dependencies.reduce(
         (prov, dependency) => ({
             ...prov,
@@ -34,16 +29,10 @@ export function ProviderBuilder<
         }),
         {} as Record<keyof Dependencies, typeof NOT_PROVIDED>,
     );
-    const provider: ADIProviderInternal<Dependencies, Configuration> = {
+    const provider: ADIProviderInternal<Dependencies> = {
         providers: initialProviders,
         // @ts-expect-error -- only usable once all dependencies have been provided
-        create(
-            this: ADIProviderInternal<
-                Dependencies,
-                Configuration,
-                keyof Dependencies
-            >,
-        ) {
+        create(this: ADIProviderInternal<Dependencies, keyof Dependencies>) {
             if (
                 dependencies.some((dep) => this.providers[dep] === NOT_PROVIDED)
             ) {
@@ -51,18 +40,14 @@ export function ProviderBuilder<
                     "Cannot create a runner without providing all dependencies",
                 );
             }
-            return new Runner<Dependencies, Configuration>(
+            return new Runner<Dependencies, Record<never, unknown>>(
                 storage,
                 this.providers,
             );
         },
 
         constant<NewProvider extends keyof Dependencies>(
-            this: ADIProviderInternal<
-                Dependencies,
-                Configuration,
-                keyof Dependencies
-            >,
+            this: ADIProviderInternal<Dependencies, keyof Dependencies>,
             dependency: NewProvider,
             value: Dependencies[NewProvider],
         ) {
@@ -79,13 +64,9 @@ export function ProviderBuilder<
         },
 
         factory<NewProvider extends keyof Dependencies>(
-            this: ADIProviderInternal<
-                Dependencies,
-                Configuration,
-                keyof Dependencies
-            >,
+            this: ADIProviderInternal<Dependencies, keyof Dependencies>,
             dependency: NewProvider,
-            factory: (config: Configuration) => Dependencies[NewProvider],
+            factory: () => Dependencies[NewProvider],
         ) {
             return {
                 ...this,
@@ -100,13 +81,9 @@ export function ProviderBuilder<
         },
 
         singleton<NewProvider extends keyof Dependencies>(
-            this: ADIProviderInternal<
-                Dependencies,
-                Configuration,
-                keyof Dependencies
-            >,
+            this: ADIProviderInternal<Dependencies, keyof Dependencies>,
             dependency: NewProvider,
-            factory: (config: Configuration) => Dependencies[NewProvider],
+            factory: () => Dependencies[NewProvider],
         ) {
             return {
                 ...this,

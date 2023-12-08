@@ -1,5 +1,4 @@
 import { Factory } from "../types/provider";
-import { GenericRecord } from "../types/util";
 
 export const SINGLETON: unique symbol = Symbol("singleton");
 export const FACTORY: unique symbol = Symbol("factory");
@@ -9,57 +8,42 @@ export type ConstantProviderConfig<T> = {
     type: typeof CONSTANT;
     value: T;
 };
-export type SingletonProviderConfig<
-    T,
-    C extends Record<string | number | symbol, unknown>,
-> = {
+export type SingletonProviderConfig<T> = {
     type: typeof SINGLETON;
-    factory: Factory<T, C>;
+    factory: Factory<T>;
 };
-export type FactoryProviderConfig<
-    T,
-    C extends Record<string | number | symbol, unknown>,
-> = {
+export type FactoryProviderConfig<T> = {
     type: typeof FACTORY;
-    factory: Factory<T, C>;
+    factory: Factory<T>;
 };
-export type ProviderConfig<
-    T,
-    C extends Record<string | number | symbol, unknown>,
-> =
+export type ProviderConfig<T> =
     | ConstantProviderConfig<T>
-    | SingletonProviderConfig<T, C>
-    | FactoryProviderConfig<T, C>;
+    | SingletonProviderConfig<T>
+    | FactoryProviderConfig<T>;
 
 export abstract class Provider<T> {
     public abstract get value(): T;
 
-    public static from<T, C extends GenericRecord>(
-        providerConfig: ProviderConfig<T, C>,
-        config: C,
-    ) {
+    public static from<T>(providerConfig: ProviderConfig<T>) {
         switch (providerConfig.type) {
             case CONSTANT:
                 return new ConstantProvider(providerConfig.value);
             case SINGLETON:
                 return new SingletonProvider(
-                    this.getFactoryFunction(providerConfig.factory, config),
+                    this.getFactoryFunction(providerConfig.factory),
                 );
             case FACTORY:
                 return new FactoryProvider(
-                    this.getFactoryFunction(providerConfig.factory, config),
+                    this.getFactoryFunction(providerConfig.factory),
                 );
             default:
                 throw new Error(`Unknown provider type: ${providerConfig}`);
         }
     }
 
-    private static getFactoryFunction<T, C extends GenericRecord>(
-        factory: Factory<T, C>,
-        config: C,
-    ) {
+    private static getFactoryFunction<T>(factory: Factory<T>) {
         return () => {
-            return factory(config);
+            return factory();
         };
     }
 }

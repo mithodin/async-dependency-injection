@@ -1,14 +1,10 @@
 import { ADIRunner } from "./runner";
-import { GenericRecord, NotNeverProps } from "./util";
+import { NotNeverProps } from "./util";
 
-export type Factory<
-    Dependency,
-    Configuration extends GenericRecord = Record<never, unknown>,
-> = (config: Configuration) => Dependency;
+export type Factory<Dependency> = () => Dependency;
 
 export type ADIProvider<
     Dependencies extends Record<string | symbol, unknown>,
-    Configuration extends Record<string | symbol | number, unknown>,
     Provided extends keyof Dependencies = never,
 > = NotNeverProps<{
     /**
@@ -17,37 +13,37 @@ export type ADIProvider<
      * @param factory A function or constructor that creates the dependency
      */
     singleton: <Dependency extends Exclude<keyof Dependencies, Provided>>(
-        this: ADIProvider<Dependencies, Configuration, Provided>,
+        this: ADIProvider<Dependencies, Provided>,
         dependency: Dependency,
-        factory: Factory<Dependencies[Dependency], Configuration>,
-    ) => ADIProvider<Dependencies, Configuration, Provided | Dependency>;
+        factory: Factory<Dependencies[Dependency]>,
+    ) => ADIProvider<Dependencies, Provided | Dependency>;
     /**
      * A factory provider will be created lazily on each use
      * @param dependency Name of the dependency
      * @param factory A function or constructor that creates the dependency
      */
     factory: <Dependency extends Exclude<keyof Dependencies, Provided>>(
-        this: ADIProvider<Dependencies, Configuration, Provided>,
+        this: ADIProvider<Dependencies, Provided>,
         dependency: Dependency,
-        factory: Factory<Dependencies[Dependency], Configuration>,
-    ) => ADIProvider<Dependencies, Configuration, Provided | Dependency>;
+        factory: Factory<Dependencies[Dependency]>,
+    ) => ADIProvider<Dependencies, Provided | Dependency>;
     /**
      * A constant provider will always return the same value
      * @param dependency Name of the dependency
      * @param value The value to return
      */
     constant: <Dependency extends Exclude<keyof Dependencies, Provided>>(
-        this: ADIProvider<Dependencies, Configuration, Provided>,
+        this: ADIProvider<Dependencies, Provided>,
         dependency: Dependency,
         value: Dependencies[Dependency],
-    ) => ADIProvider<Dependencies, Configuration, Provided | Dependency>;
+    ) => ADIProvider<Dependencies, Provided | Dependency>;
     /**
      * Create a runner that will run a program with the dependencies provided by this provider
      * Can only be invoked once all dependencies have been provided
      */
     create: [keyof Dependencies] extends [Provided]
         ? (
-              this: ADIProvider<Dependencies, Configuration, Provided>,
-          ) => ADIRunner<Configuration>
+              this: ADIProvider<Dependencies, Provided>,
+          ) => ADIRunner<Record<never, unknown>>
         : never;
 }>;

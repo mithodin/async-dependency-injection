@@ -12,15 +12,15 @@ export class Runner<
     constructor(
         private readonly storage: AsyncLocalStorage<Dependencies>,
         private readonly providers: {
-            [K in keyof Dependencies]: ProviderConfig<Dependencies[K], C>;
+            [K in keyof Dependencies]: ProviderConfig<Dependencies[K]>;
         },
     ) {}
 
-    readonly run = ((program: () => unknown, config: C) => {
+    readonly run = ((program: () => unknown, _config: C) => {
         const providers = mapObject<
             typeof this.providers,
             { [K in keyof Dependencies]: Provider<Dependencies[K]> }
-        >(this.providers, (provider) => Provider.from(provider, config));
+        >(this.providers, (provider) => Provider.from(provider));
         const container = RuntimeContainer<Dependencies>(providers);
         return this.storage.run(container, program);
     }) as ADIRunner<C>["run"];

@@ -1,5 +1,4 @@
 import { ADIProvider } from "./provider";
-import { GenericRecord } from "./util";
 
 export type ADIContainer<
     Dependencies extends Record<string | symbol, unknown>,
@@ -15,7 +14,5 @@ export type ADIContainer<
      * Start configuring a provider for this container.
      * If your provider factories require runtime configuration, specify the shape of the configuration object as a generic parameter
      */
-    provider: <
-        Configuration extends GenericRecord = Record<never, unknown>,
-    >() => ADIProvider<Dependencies, Configuration>;
+    provider: () => ADIProvider<Dependencies>;
 };
