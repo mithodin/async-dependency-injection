@@ -1,6 +1,6 @@
 {
     "name": "async-dependency-injection",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "A simple and lightweight dependency injection framework for node.js",
     "type": "module",
     "main": "./dist/index.js",
