@@ -4,9 +4,8 @@ import { ADIProvider } from "./types/provider";
 import { ProviderBuilder } from "./runtime/providerBuilder";
 export * from "./types/public";
 
-type Unwrap<T extends TypeSpecifier<unknown>> = T extends TypeSpecifier<infer U>
-    ? U
-    : never;
+type Unwrap<T extends () => TypeSpecifier<unknown>> =
+    ReturnType<T> extends TypeSpecifier<infer U> ? U : never;
 type TypeSpecifier<T> = {
     __tag: typeof TYPE_TAG;
     __type: T;
@@ -40,7 +39,7 @@ class Container<Dependencies extends Record<string | symbol, unknown>>
 }
 
 export function createContainer<
-    Dependencies extends Record<string | symbol, TypeSpecifier<unknown>>,
+    Dependencies extends Record<string | symbol, () => TypeSpecifier<unknown>>,
 >(dependencies: Dependencies) {
     return new Container<{
         [K in keyof Dependencies]: Unwrap<Dependencies[K]>;

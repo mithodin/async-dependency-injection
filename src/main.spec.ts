@@ -9,14 +9,14 @@ describe("Create Container", () => {
     });
 
     it("should throw an error if container.use is used outside of a Runner", () => {
-        const container = createContainer({ a: type<string>() });
+        const container = createContainer({ a: type<string> });
         expect(() => container.use("a")).toThrow();
     });
 
     it("should create a runner if configured properly", () => {
         const container = createContainer({
-            a: type<string>(),
-            b: type<number>(),
+            a: type<string>,
+            b: type<number>,
         });
 
         const runner = container
@@ -34,7 +34,7 @@ describe("Create Container", () => {
     it("should create one singleton per runner", () => {
         const factory = vi.fn(() => "test");
         const container = createContainer({
-            a: type<string>(),
+            a: type<string>,
         });
 
         const runner = container.provider().singleton("a", factory).create();

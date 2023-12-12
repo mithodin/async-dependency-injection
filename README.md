@@ -15,10 +15,10 @@ Your program can use one or multiple containers at the same time.
 import { createContainer, type } from "async-dependency-injection";
 
 const container = createContainer({
-    logger: type<(message: string) => void>(),
-    name: type<string>(),
-    counter: type<number>(),
-    user: type<string>(),
+    logger: type<(message: string) => void>,
+    name: type<string>,
+    counter: type<number>,
+    user: type<string>,
 });
 ```
 
@@ -100,8 +100,8 @@ For example, you might want to provide information about a request context in a 
 import { createContainer, type } from "async-dependency-injection";
 
 const container = createContainer({
-    logger: type<{ info: (message: string) => void }>(),
-    userIP: type<string>(),
+    logger: type<{ info: (message: string) => void }>,
+    userIP: type<string>,
 });
 
 class LoggerWithIP {
